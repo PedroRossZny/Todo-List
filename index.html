@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#6d5dfc"><title>Flow — Todo List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="#"><b>✓</b>flow</a>
+    <button class="new-task-button" id="open-task-modal"><span>＋</span> Nova tarefa <kbd>⌘ N</kbd></button>
+    <nav class="primary-nav"><p>VISÃO GERAL</p>
+      <button class="nav-item active" data-view="today"><i>◉</i> Hoje <b id="today-count">0</b></button>
+      <button class="nav-item" data-view="upcoming"><i>◷</i> Próximas <b id="upcoming-count">0</b></button>
+      <button class="nav-item" data-view="all"><i>☷</i> Todas as tarefas</button>
+      <button class="nav-item" data-view="completed"><i>✓</i> Concluídas</button>
+    </nav>
+    <section class="project-section"><div class="section-title"><p>PROJETOS</p><button id="add-project" aria-label="Novo projeto">＋</button></div><div id="projects-list"></div></section>
+    <div class="sidebar-footer"><div class="usage"><div><span>Seu progresso semanal</span><strong id="weekly-progress">0%</strong></div><div class="progress-track"><i id="progress-bar"></i></div><small><span id="completed-week">0</span> de <span id="weekly-total">0</span> tarefas concluídas</small></div><button class="profile"><span class="avatar">PH</span><span><strong>Pedro Henrique</strong><small>Plano gratuito</small></span><em>•••</em></button></div>
+  </aside>
+  <main class="content">
+    <header class="topbar"><button class="mobile-menu" id="mobile-menu">☰</button><label class="search"><span>⌕</span><input id="search-input" type="search" placeholder="Buscar tarefas..."><kbd>⌘ K</kbd></label><div class="top-actions"><button class="icon-button" id="theme-toggle">☾</button><button class="icon-button notification">♧<i></i></button></div></header>
+    <section class="page"><div class="page-heading"><div><p class="eyebrow" id="today-label"></p><h1 id="page-title">Bom dia, Pedro <span>☀</span></h1><p class="subtitle" id="page-subtitle">Você tem tarefas esperando por você.</p></div><button class="filter-button" id="filter-toggle">☷ Filtros <i id="filter-count"></i></button></div>
+      <div class="filter-panel" id="filter-panel" hidden><label>Prioridade<select id="priority-filter"><option value="all">Todas</option><option value="high">Alta</option><option value="medium">Média</option><option value="low">Baixa</option></select></label><label>Projeto<select id="project-filter"><option value="all">Todos os projetos</option></select></label><button id="clear-filters">Limpar filtros</button></div>
+      <section class="focus-card" id="focus-card"><div class="focus-icon">✦</div><div><p>FOCO DO DIA</p><h2 id="focus-title"></h2><span id="focus-detail"></span></div><button id="focus-complete">✓</button></section>
+      <div class="task-toolbar"><span id="task-summary"></span><button>↕ Ordenar por: data</button></div><div id="tasks-list" class="tasks-list"></div>
+      <div class="empty-state" id="empty-state" hidden><div>☁</div><h2>Nada por aqui</h2><p>Que tal criar uma nova tarefa para começar?</p><button class="new-task-button" data-open-modal>＋ Nova tarefa</button></div>
+    </section>
+  </main>
+</div>
+<div class="modal-backdrop" id="modal-backdrop" hidden><form class="task-modal" id="task-form"><div class="modal-head"><h2 id="modal-title">Nova tarefa</h2><button type="button" class="close-modal">×</button></div><label class="field title-field"><span>Título</span><input id="task-title" name="title" required maxlength="100" placeholder="O que precisa ser feito?"></label><label class="field"><span>Descrição <em>opcional</em></span><textarea id="task-description" name="description" maxlength="250" placeholder="Adicione mais detalhes..."></textarea></label><div class="field-row"><label class="field"><span>Projeto</span><select id="task-project" name="project"></select></label><label class="field"><span>Prioridade</span><select id="task-priority" name="priority"><option value="medium">● Média</option><option value="high">● Alta</option><option value="low">● Baixa</option></select></label></div><div class="field-row"><label class="field"><span>Data</span><input type="date" id="task-date" name="date"></label><label class="field"><span>Etiqueta</span><input id="task-tag" name="tag" maxlength="20" placeholder="Ex.: Design"></label></div><div class="modal-actions"><button class="cancel-button" type="button">Cancelar</button><button class="save-button" type="submit">Criar tarefa</button></div></form></div>
+<div class="toast" id="toast"></div><script src="scripts/script.js"></script>
+</body>
+</html>

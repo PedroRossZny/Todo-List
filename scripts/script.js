@@ -2,7 +2,7 @@ import tasksService from './tasksService.js';
 
 const $ = s => document.querySelector(s);
 const esc = t => { const e = document.createElement('div'); e.textContent = t; return e.innerHTML; };
-const escAttr = t => esc(t).replace(/"/g, '&quot;');
+const escAttr = t => esc(t).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const sortLabels = { created: 'mais recentes', alpha: 'ordem alfabética' };
 const state = { filter: 'all', search: '', sort: 'created' };

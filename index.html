@@ -25,8 +25,10 @@
   <main class="content">
     <header class="topbar"><button class="mobile-menu" id="mobile-menu">☰</button><label class="search"><span>⌕</span><input id="search-input" type="search" placeholder="Buscar tarefas..."><kbd>⌘ K</kbd></label><div class="top-actions"><button class="icon-button" id="theme-toggle">☾</button><button class="icon-button notification">♧<i></i></button></div></header>
     <section class="page"><div class="page-heading"><div><h1 id="page-title">Minhas tarefas</h1><p class="subtitle" id="page-subtitle">Gerencie o que precisa ser feito.</p></div></div>
-      <div class="task-toolbar"><span id="task-summary"></span><button id="sort-toggle">↕ Ordenar por: mais recentes</button></div><div id="tasks-list" class="tasks-list"></div>
-      <div class="empty-state" id="empty-state" hidden><div>☁</div><h2>Nada por aqui</h2><p>Que tal criar uma nova tarefa para começar?</p><button class="new-task-button" data-open-modal>＋ Nova tarefa</button></div>
+      <div class="error-banner" id="error-banner" hidden><span id="error-banner-text"></span><button id="retry-load">Tentar novamente</button></div>
+      <div class="loading-state" id="loading-state" hidden>Carregando tarefas…</div>
+      <div class="task-toolbar" id="task-toolbar" hidden><span id="task-summary"></span><button id="sort-toggle">↕ Ordenar por: mais recentes</button></div><div id="tasks-list" class="tasks-list"></div>
+      <div class="empty-state" id="empty-state" hidden></div>
     </section>
   </main>
 </div>

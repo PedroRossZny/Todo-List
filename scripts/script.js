@@ -2,6 +2,7 @@ import tasksService from './tasksService.js';
 
 const $ = s => document.querySelector(s);
 const esc = t => { const e = document.createElement('div'); e.textContent = t; return e.innerHTML; };
+const escAttr = t => esc(t).replace(/"/g, '&quot;');
 
 const sortLabels = { created: 'mais recentes', alpha: 'ordem alfabética' };
 const state = { filter: 'all', search: '', sort: 'created' };
@@ -41,16 +42,16 @@ function renderEmptyState(tasks) {
   el.hidden = false;
   const filtering = state.filter !== 'all' || state.search.trim() !== '';
   el.innerHTML = filtering
-    ? `<div>⌕</div><h2>Nenhuma tarefa encontrada</h2><p>Tente ajustar a busca ou o filtro selecionado.</p><button class="clear-filter-button" id="clear-search-filter">Limpar busca e filtro</button>`
-    : `<div>☁</div><h2>Nada por aqui</h2><p>Que tal criar uma nova tarefa para começar?</p><button class="new-task-button" data-open-modal>＋ Nova tarefa</button>`;
+    ? `<div aria-hidden="true">⌕</div><h2>Nenhuma tarefa encontrada</h2><p>Tente ajustar a busca ou o filtro selecionado.</p><button class="clear-filter-button" id="clear-search-filter">Limpar busca e filtro</button>`
+    : `<div aria-hidden="true">☁</div><h2>Nada por aqui</h2><p>Que tal criar uma nova tarefa para começar?</p><button class="new-task-button" data-open-modal><span aria-hidden="true">＋</span> Nova tarefa</button>`;
 }
 
 function renderTasks(tasks) {
   $('#tasks-list').innerHTML = tasks.map(t => `
     <article class="task ${t.done ? 'done' : ''}" data-id="${t.id}">
-      <input class="task-check" type="checkbox" ${t.done ? 'checked' : ''}>
+      <input class="task-check" type="checkbox" ${t.done ? 'checked' : ''} aria-label="Marcar &quot;${escAttr(t.title)}&quot; como ${t.done ? 'não concluída' : 'concluída'}">
       <div class="task-main"><div class="task-name">${esc(t.title)}</div></div>
-      <button class="task-delete" title="Excluir tarefa">✕</button>
+      <button class="task-delete" title="Excluir tarefa" aria-label="Excluir tarefa: ${escAttr(t.title)}">✕</button>
     </article>`).join('');
   $('#tasks-list').hidden = tasks.length === 0;
   $('#task-summary').textContent = `${tasks.length} ${tasks.length === 1 ? 'tarefa' : 'tarefas'}`;
@@ -104,14 +105,34 @@ async function load() {
   }
 }
 
+function setSidebarOpen(open) {
+  $('#sidebar').classList.toggle('open', open);
+  $('#mobile-menu').setAttribute('aria-expanded', String(open));
+}
+function toggleSidebar() { setSidebarOpen(!$('#sidebar').classList.contains('open')); }
+
+let lastFocusedBeforeModal = null;
 function openModal() {
+  lastFocusedBeforeModal = document.activeElement;
   $('#task-title').value = '';
   $('#modal-backdrop').hidden = false;
   setTimeout(() => $('#task-title').focus(), 50);
 }
 function closeModal() {
+  if ($('#modal-backdrop').hidden) return;
   $('#modal-backdrop').hidden = true;
   $('#task-form').reset();
+  lastFocusedBeforeModal?.focus();
+}
+function focusableModalElements() {
+  return [...$('#task-form').querySelectorAll('input,button')].filter(el => !el.disabled);
+}
+function trapModalFocus(e) {
+  if (e.key !== 'Tab' || $('#modal-backdrop').hidden) return;
+  const focusable = focusableModalElements();
+  const first = focusable[0], last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
 }
 
 document.addEventListener('click', async e => {
@@ -134,13 +155,13 @@ document.addEventListener('click', async e => {
     state.filter = nav.dataset.filter;
     document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el === nav));
     renderTasks(visibleTasks());
-    $('#sidebar').classList.remove('open');
+    setSidebarOpen(false);
     return;
   }
 
   if (e.target.closest('#sort-toggle')) {
     state.sort = state.sort === 'created' ? 'alpha' : 'created';
-    $('#sort-toggle').textContent = `↕ Ordenar por: ${sortLabels[state.sort]}`;
+    $('#sort-toggle').innerHTML = `<span aria-hidden="true">↕</span> Ordenar por: ${sortLabels[state.sort]}`;
     renderTasks(visibleTasks());
     return;
   }
@@ -173,10 +194,12 @@ document.addEventListener('click', async e => {
 
   if (e.target.closest('#theme-toggle')) {
     document.body.classList.toggle('dark');
-    $('#theme-toggle').textContent = document.body.classList.contains('dark') ? '☀' : '☾';
+    const dark = document.body.classList.contains('dark');
+    $('#theme-toggle').textContent = dark ? '☀' : '☾';
+    $('#theme-toggle').setAttribute('aria-label', dark ? 'Ativar modo claro' : 'Ativar modo escuro');
     return;
   }
-  if (e.target.closest('#mobile-menu')) { $('#sidebar').classList.toggle('open'); return; }
+  if (e.target.closest('#mobile-menu')) { toggleSidebar(); return; }
 });
 
 $('#task-form').addEventListener('submit', async e => {
@@ -206,7 +229,8 @@ $('#search-input').addEventListener('input', e => {
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') { e.preventDefault(); openModal(); }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); $('#search-input').focus(); }
-  if (e.key === 'Escape') { closeModal(); $('#sidebar').classList.remove('open'); }
+  if (e.key === 'Escape') { closeModal(); setSidebarOpen(false); }
+  trapModalFocus(e);
 });
 
 load();

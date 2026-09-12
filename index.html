@@ -10,29 +10,29 @@
 <body>
 <div class="app-shell">
   <aside class="sidebar" id="sidebar">
-    <a class="brand" href="#"><b>✓</b>flow</a>
-    <button class="new-task-button" id="open-task-modal"><span>＋</span> Nova tarefa <kbd>⌘ N</kbd></button>
+    <a class="brand" href="#"><b aria-hidden="true">✓</b>flow</a>
+    <button class="new-task-button" id="open-task-modal"><span aria-hidden="true">＋</span> Nova tarefa <kbd>⌘ N</kbd></button>
     <nav class="primary-nav">
-      <button class="nav-item active" data-filter="all"><i>☷</i> Todas <b id="count-all">0</b></button>
-      <button class="nav-item" data-filter="pending"><i>◷</i> Pendentes <b id="count-pending">0</b></button>
-      <button class="nav-item" data-filter="done"><i>✓</i> Concluídas <b id="count-done">0</b></button>
+      <button class="nav-item active" data-filter="all"><i aria-hidden="true">☷</i> Todas <b id="count-all">0</b></button>
+      <button class="nav-item" data-filter="pending"><i aria-hidden="true">◷</i> Pendentes <b id="count-pending">0</b></button>
+      <button class="nav-item" data-filter="done"><i aria-hidden="true">✓</i> Concluídas <b id="count-done">0</b></button>
     </nav>
     <div class="sidebar-footer">
-      <div class="usage"><div><span>Seu progresso</span><strong id="weekly-progress">0%</strong></div><div class="progress-track"><i id="progress-bar"></i></div><small><span id="completed-week">0</span> de <span id="weekly-total">0</span> tarefas concluídas</small></div>
-      <button class="profile"><span class="avatar">PH</span><span><strong>Pedro Henrique</strong><small>Plano gratuito</small></span><em>•••</em></button>
+      <div class="usage"><div><span>Seu progresso</span><strong id="weekly-progress">0%</strong></div><div class="progress-track"><i id="progress-bar" aria-hidden="true"></i></div><small><span id="completed-week">0</span> de <span id="weekly-total">0</span> tarefas concluídas</small></div>
+      <button class="profile"><span class="avatar" aria-hidden="true">PH</span><span><strong>Pedro Henrique</strong><small>Plano gratuito</small></span><em aria-hidden="true">•••</em></button>
     </div>
   </aside>
   <main class="content">
-    <header class="topbar"><button class="mobile-menu" id="mobile-menu">☰</button><label class="search"><span>⌕</span><input id="search-input" type="search" placeholder="Buscar tarefas..."><kbd>⌘ K</kbd></label><div class="top-actions"><button class="icon-button" id="theme-toggle">☾</button><button class="icon-button notification">♧<i></i></button></div></header>
+    <header class="topbar"><button class="mobile-menu" id="mobile-menu" aria-label="Abrir menu" aria-expanded="false">☰</button><label class="search"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="Buscar tarefas..." aria-label="Buscar tarefas"><kbd>⌘ K</kbd></label><div class="top-actions"><button class="icon-button" id="theme-toggle" aria-label="Ativar modo escuro">☾</button><button class="icon-button notification" aria-label="Notificações"><span aria-hidden="true">♧</span><i aria-hidden="true"></i></button></div></header>
     <section class="page"><div class="page-heading"><div><h1 id="page-title">Minhas tarefas</h1><p class="subtitle" id="page-subtitle">Gerencie o que precisa ser feito.</p></div></div>
       <div class="error-banner" id="error-banner" hidden><span id="error-banner-text"></span><button id="retry-load">Tentar novamente</button></div>
       <div class="loading-state" id="loading-state" hidden>Carregando tarefas…</div>
-      <div class="task-toolbar" id="task-toolbar" hidden><span id="task-summary"></span><button id="sort-toggle">↕ Ordenar por: mais recentes</button></div><div id="tasks-list" class="tasks-list"></div>
+      <div class="task-toolbar" id="task-toolbar" hidden><span id="task-summary"></span><button id="sort-toggle"><span aria-hidden="true">↕</span> Ordenar por: mais recentes</button></div><div id="tasks-list" class="tasks-list"></div>
       <div class="empty-state" id="empty-state" hidden></div>
     </section>
   </main>
 </div>
-<div class="modal-backdrop" id="modal-backdrop" hidden><form class="task-modal" id="task-form"><div class="modal-head"><h2 id="modal-title">Nova tarefa</h2><button type="button" class="close-modal">×</button></div><label class="field title-field"><span>Título</span><input id="task-title" name="title" required maxlength="100" placeholder="O que precisa ser feito?"></label><div class="modal-actions"><button class="cancel-button" type="button">Cancelar</button><button class="save-button" type="submit">Criar tarefa</button></div></form></div>
+<div class="modal-backdrop" id="modal-backdrop" hidden><form class="task-modal" id="task-form" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-head"><h2 id="modal-title">Nova tarefa</h2><button type="button" class="close-modal" aria-label="Fechar">×</button></div><label class="field title-field"><span>Título</span><input id="task-title" name="title" required maxlength="100" placeholder="O que precisa ser feito?"></label><div class="modal-actions"><button class="cancel-button" type="button">Cancelar</button><button class="save-button" type="submit">Criar tarefa</button></div></form></div>
 <div class="toast" id="toast"></div><script type="module" src="scripts/script.js"></script>
 </body>
 </html>

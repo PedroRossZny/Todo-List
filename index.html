@@ -12,15 +12,20 @@
   <aside class="sidebar" id="sidebar">
     <a class="brand" href="#"><b>✓</b>flow</a>
     <button class="new-task-button" id="open-task-modal"><span>＋</span> Nova tarefa <kbd>⌘ N</kbd></button>
+    <nav class="primary-nav">
+      <button class="nav-item active" data-filter="all"><i>☷</i> Todas <b id="count-all">0</b></button>
+      <button class="nav-item" data-filter="pending"><i>◷</i> Pendentes <b id="count-pending">0</b></button>
+      <button class="nav-item" data-filter="done"><i>✓</i> Concluídas <b id="count-done">0</b></button>
+    </nav>
     <div class="sidebar-footer">
       <div class="usage"><div><span>Seu progresso</span><strong id="weekly-progress">0%</strong></div><div class="progress-track"><i id="progress-bar"></i></div><small><span id="completed-week">0</span> de <span id="weekly-total">0</span> tarefas concluídas</small></div>
       <button class="profile"><span class="avatar">PH</span><span><strong>Pedro Henrique</strong><small>Plano gratuito</small></span><em>•••</em></button>
     </div>
   </aside>
   <main class="content">
-    <header class="topbar"><button class="mobile-menu" id="mobile-menu">☰</button><div class="top-actions"><button class="icon-button" id="theme-toggle">☾</button><button class="icon-button notification">♧<i></i></button></div></header>
+    <header class="topbar"><button class="mobile-menu" id="mobile-menu">☰</button><label class="search"><span>⌕</span><input id="search-input" type="search" placeholder="Buscar tarefas..."><kbd>⌘ K</kbd></label><div class="top-actions"><button class="icon-button" id="theme-toggle">☾</button><button class="icon-button notification">♧<i></i></button></div></header>
     <section class="page"><div class="page-heading"><div><h1 id="page-title">Minhas tarefas</h1><p class="subtitle" id="page-subtitle">Gerencie o que precisa ser feito.</p></div></div>
-      <div class="task-toolbar"><span id="task-summary"></span></div><div id="tasks-list" class="tasks-list"></div>
+      <div class="task-toolbar"><span id="task-summary"></span><button id="sort-toggle">↕ Ordenar por: mais recentes</button></div><div id="tasks-list" class="tasks-list"></div>
       <div class="empty-state" id="empty-state" hidden><div>☁</div><h2>Nada por aqui</h2><p>Que tal criar uma nova tarefa para começar?</p><button class="new-task-button" data-open-modal>＋ Nova tarefa</button></div>
     </section>
   </main>

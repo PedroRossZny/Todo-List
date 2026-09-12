@@ -1,3 +1,12 @@
+// script.js
+// -----------------------------------------------------------------------
+// Camada de UI: renderiza a lista de tarefas e liga os elementos de
+// index.html aos eventos do usuário (criar, concluir, excluir, filtrar,
+// buscar, ordenar, tema, sidebar mobile, modal). Não conhece de onde os
+// dados vêm — toda leitura/escrita passa por tasksService (getAll/create/
+// toggle/remove/health), que é o único módulo que sabe se os dados estão
+// em memória ou vindo de uma API real.
+// -----------------------------------------------------------------------
 import tasksService from './tasksService.js';
 
 const $ = s => document.querySelector(s);

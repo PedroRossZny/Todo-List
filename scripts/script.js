@@ -13,10 +13,12 @@ const $ = s => document.querySelector(s);
 const esc = t => { const e = document.createElement('div'); e.textContent = t; return e.innerHTML; };
 const escAttr = t => esc(t).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
+// --- Estado e seleção de tarefas visíveis ---
 const sortLabels = { created: 'mais recentes', alpha: 'ordem alfabética' };
 const state = { filter: 'all', search: '', sort: 'created' };
 let allTasks = [];
 
+// --- Renderização ---
 let toastTimer = null;
 function toast(message, type = 'success') {
   const el = $('#toast');
@@ -129,6 +131,7 @@ function resetView() {
   setSidebarOpen(false);
 }
 
+// --- Tema ---
 function applyTheme(dark) {
   document.body.classList.toggle('dark', dark);
   $('#theme-toggle').textContent = dark ? '☀' : '☾';
@@ -145,12 +148,14 @@ function initTheme() {
   applyTheme(stored ? stored === 'dark' : prefersDark);
 }
 
+// --- Atalhos de teclado ---
 function initShortcutLabels() {
   if (/Mac|iPod|iPhone|iPad/.test(navigator.platform)) return;
   $('#shortcut-new').textContent = 'Ctrl N';
   $('#shortcut-search').textContent = 'Ctrl K';
 }
 
+// --- Modal e foco ---
 let lastFocusedBeforeModal = null;
 function openModal() {
   lastFocusedBeforeModal = document.activeElement;
@@ -176,6 +181,7 @@ function trapModalFocus(e) {
   else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
 }
 
+// --- Event listeners ---
 document.addEventListener('click', async e => {
   if (e.target.closest('#open-task-modal,[data-open-modal]')) { openModal(); return; }
   if (e.target.closest('.close-modal,.cancel-button') || e.target === $('#modal-backdrop')) { closeModal(); return; }

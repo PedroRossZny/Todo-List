@@ -22,6 +22,8 @@
 </head>
 <body>
   <div class="app-shell">
+
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <button type="button" class="brand" id="brand-home">
         <b aria-hidden="true">✓</b>flow
@@ -64,7 +66,10 @@
         </div>
       </div>
     </aside>
+
     <main class="content">
+
+      <!-- Topbar -->
       <header class="topbar">
         <button class="mobile-menu" id="mobile-menu" aria-label="Abrir menu" aria-expanded="false">☰</button>
         <label class="search">
@@ -76,6 +81,8 @@
           <button class="icon-button" id="theme-toggle" aria-label="Ativar modo escuro">☾</button>
         </div>
       </header>
+
+      <!-- Lista de tarefas -->
       <section class="page">
         <div class="page-heading">
           <div>
@@ -83,11 +90,14 @@
             <p class="subtitle">Gerencie o que precisa ser feito.</p>
           </div>
         </div>
+
         <div class="error-banner" id="error-banner" hidden>
           <span id="error-banner-text"></span>
           <button id="retry-load">Tentar novamente</button>
         </div>
+
         <div class="loading-state" id="loading-state" hidden>Carregando tarefas…</div>
+
         <div class="task-toolbar" id="task-toolbar" hidden>
           <span id="task-summary"></span>
           <button id="sort-toggle">
@@ -95,11 +105,16 @@
             Ordenar por: mais recentes
           </button>
         </div>
+
         <div id="tasks-list" class="tasks-list"></div>
+
         <div class="empty-state" id="empty-state" hidden></div>
       </section>
+
     </main>
   </div>
+
+  <!-- Modal de nova tarefa -->
   <div class="modal-backdrop" id="modal-backdrop" hidden>
     <form class="task-modal" id="task-form" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal-head">
@@ -117,7 +132,10 @@
       </div>
     </form>
   </div>
+
+  <!-- Toast -->
   <div class="toast" id="toast"></div>
+
   <script type="module" src="scripts/script.js"></script>
 </body>
 </html>

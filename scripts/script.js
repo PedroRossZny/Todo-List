@@ -9,8 +9,13 @@
 // -----------------------------------------------------------------------
 import tasksService from './tasksService.js';
 
+// Atalho para document.querySelector.
 const $ = s => document.querySelector(s);
+// Escapa texto para uso seguro como conteúdo de elemento (ex.: nome da tarefa).
 const esc = t => { const e = document.createElement('div'); e.textContent = t; return e.innerHTML; };
+// Mesma escapagem de esc(), mas também trata aspas simples/duplas — usar
+// sempre que o valor for interpolado dentro de um atributo (ex.: aria-label),
+// nunca só esc(), senão um título com aspas quebra o HTML do atributo.
 const escAttr = t => esc(t).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 // --- Estado e seleção de tarefas visíveis ---
@@ -19,6 +24,8 @@ const state = { filter: 'all', search: '', sort: 'created' };
 let allTasks = [];
 
 // --- Renderização ---
+// Mostra uma mensagem passageira no rodapé da tela; type 'error' troca a cor
+// para deixar claro que algo deu errado (mesmo componente para sucesso e erro).
 let toastTimer = null;
 function toast(message, type = 'success') {
   const el = $('#toast');
@@ -29,6 +36,10 @@ function toast(message, type = 'success') {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
 }
 
+// Aplica, nessa ordem, filtro de status -> busca por título -> ordenação, sobre
+// todas as tarefas carregadas. A ordem importa: filtrar antes de buscar evita
+// vasculhar tarefas que nem apareceriam na view atual, e ordenar por último
+// garante que o resultado final (o que a lista realmente mostra) saia ordenado.
 function visibleTasks() {
   let list = allTasks.filter(t => {
     if (state.filter === 'pending') return !t.done;
@@ -41,12 +52,20 @@ function visibleTasks() {
   return list;
 }
 
+// Atualiza os contadores da sidebar (Todas/Pendentes/Concluídas). Sempre usa
+// allTasks (não a lista filtrada), porque o contador deve refletir o total
+// real de cada status, mesmo com busca ou outro filtro ativo.
 function renderCounts() {
   $('#count-all').textContent = allTasks.length;
   $('#count-pending').textContent = allTasks.filter(t => !t.done).length;
   $('#count-done').textContent = allTasks.filter(t => t.done).length;
 }
 
+// Mostra o estado vazio quando a lista renderizada não tem itens - mas com
+// texto diferente dependendo do motivo, pra não confundir o usuário: se há
+// filtro/busca ativo, o problema é o filtro atual ("nenhum resultado", com
+// botão pra limpar); se não há filtro nenhum, é que realmente não existe
+// nenhuma tarefa ainda ("nada por aqui", com botão pra criar a primeira).
 function renderEmptyState(tasks) {
   const el = $('#empty-state');
   if (tasks.length !== 0) { el.hidden = true; return; }
@@ -57,6 +76,8 @@ function renderEmptyState(tasks) {
     : `<div aria-hidden="true">☁</div><h2>Nada por aqui</h2><p>Que tal criar uma nova tarefa para começar?</p><button class="new-task-button" data-open-modal><span aria-hidden="true">＋</span> Nova tarefa</button>`;
 }
 
+// Desenha a lista de tarefas (já filtrada/ordenada) e, em seguida, o resumo
+// e o estado vazio, que dependem do mesmo array `tasks`.
 function renderTasks(tasks) {
   $('#tasks-list').innerHTML = tasks.map(t => `
     <article class="task ${t.done ? 'done' : ''}" data-id="${t.id}">
@@ -69,6 +90,8 @@ function renderTasks(tasks) {
   renderEmptyState(tasks);
 }
 
+// Atualiza a barra e o texto de progresso semanal na sidebar, sempre com base
+// no total de tarefas (allTasks), não na lista filtrada.
 function renderProgress() {
   const done = allTasks.filter(t => t.done).length;
   const total = allTasks.length;
@@ -79,12 +102,16 @@ function renderProgress() {
   $('#weekly-total').textContent = total;
 }
 
+// Redesenha a tela inteira (contadores, lista, progresso) - chamada depois
+// que allTasks muda, tipicamente após um load() bem-sucedido.
 function renderAll() {
   renderCounts();
   renderTasks(visibleTasks());
   renderProgress();
 }
 
+// Esconde tudo (toolbar, lista, vazio, erro) e mostra só o aviso de
+// carregando, enquanto load() aguarda a resposta do tasksService.
 function showLoading() {
   $('#loading-state').hidden = false;
   $('#error-banner').hidden = true;
@@ -93,6 +120,8 @@ function showLoading() {
   $('#empty-state').hidden = true;
 }
 
+// Mostra o banner de erro (com botão "Tentar novamente") no lugar da lista,
+// usado quando o health check ou o carregamento das tarefas falha.
 function showLoadError(err) {
   $('#loading-state').hidden = true;
   $('#task-toolbar').hidden = true;
@@ -102,6 +131,10 @@ function showLoadError(err) {
   $('#error-banner').hidden = false;
 }
 
+// Carrega as tarefas do zero: primeiro checa a saúde do backend (hoje sempre
+// ok, simulado), depois busca a lista. Chamada no boot e sempre que uma ação
+// (criar/concluir/excluir) precisa reconciliar o estado local com a "fonte
+// da verdade" do tasksService.
 async function load() {
   showLoading();
   try {
@@ -116,31 +149,45 @@ async function load() {
   }
 }
 
+// Abre/fecha a sidebar no layout mobile e mantém aria-expanded em sincronia.
 function setSidebarOpen(open) {
   $('#sidebar').classList.toggle('open', open);
   $('#mobile-menu').setAttribute('aria-expanded', String(open));
 }
 function toggleSidebar() { setSidebarOpen(!$('#sidebar').classList.contains('open')); }
 
+// Marca qual item de status fica ativo na sidebar - único lugar que decide
+// isso, usado tanto ao clicar num item de nav quanto ao resetar a view.
+function setActiveFilter(filter) {
+  state.filter = filter;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.filter === filter));
+}
+
+// Volta para a visão padrão (Todas, sem busca) - usado pelo logo "flow" e
+// pelo botão "Limpar busca e filtro" do estado vazio.
 function resetView() {
-  state.filter = 'all';
+  setActiveFilter('all');
   state.search = '';
   $('#search-input').value = '';
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.filter === 'all'));
   renderTasks(visibleTasks());
   setSidebarOpen(false);
 }
 
 // --- Tema ---
+// Aplica o tema na tela (classe no body + ícone/aria-label do botão), sem
+// mexer em persistência - é o passo comum entre setTheme() e initTheme().
 function applyTheme(dark) {
   document.body.classList.toggle('dark', dark);
   $('#theme-toggle').textContent = dark ? '☀' : '☾';
   $('#theme-toggle').setAttribute('aria-label', dark ? 'Ativar modo claro' : 'Ativar modo escuro');
 }
+// Troca o tema por ação do usuário (clique no botão) e grava a escolha.
 function setTheme(dark) {
   applyTheme(dark);
   try { localStorage.setItem('flow-theme', dark ? 'dark' : 'light'); } catch { /* preferência não persistida, tema ainda funciona nesta sessão */ }
 }
+// Define o tema no carregamento da página: usa a preferência salva se houver,
+// senão segue o tema do sistema operacional (prefers-color-scheme).
 function initTheme() {
   let stored = null;
   try { stored = localStorage.getItem('flow-theme'); } catch { /* localStorage indisponível, cai para a preferência do sistema */ }
@@ -149,6 +196,9 @@ function initTheme() {
 }
 
 // --- Atalhos de teclado ---
+// Troca o símbolo "⌘" exibido nos atalhos por "Ctrl" fora do Mac - os
+// atalhos em si (Ctrl/Cmd+N, Ctrl/Cmd+K) já funcionam nos dois; isto só
+// corrige a dica visual.
 function initShortcutLabels() {
   if (/Mac|iPod|iPhone|iPad/.test(navigator.platform)) return;
   $('#shortcut-new').textContent = 'Ctrl N';
@@ -156,7 +206,10 @@ function initShortcutLabels() {
 }
 
 // --- Modal e foco ---
+// Guarda o elemento focado antes de abrir o modal, para devolver o foco a
+// ele quando o modal fechar (acessibilidade: quem abriu não "perde o lugar").
 let lastFocusedBeforeModal = null;
+// Abre o modal de nova tarefa, limpando campo e contador de caracteres.
 function openModal() {
   lastFocusedBeforeModal = document.activeElement;
   $('#task-title').value = '';
@@ -164,15 +217,23 @@ function openModal() {
   $('#modal-backdrop').hidden = false;
   setTimeout(() => $('#task-title').focus(), 50);
 }
+// Fecha o modal e devolve o foco a quem o abriu. O guard no início evita
+// devolver foco/mexer no form quando o modal já está fechado (ex.: Esc
+// pressionado sem modal aberto, só para fechar a sidebar mobile).
 function closeModal() {
   if ($('#modal-backdrop').hidden) return;
   $('#modal-backdrop').hidden = true;
   $('#task-form').reset();
   lastFocusedBeforeModal?.focus();
 }
+// Lista os campos/botões do modal que podem receber foco, na ordem do DOM -
+// usada por trapModalFocus para saber onde o ciclo de Tab começa e termina.
 function focusableModalElements() {
   return [...$('#task-form').querySelectorAll('input,button')].filter(el => !el.disabled);
 }
+// Prende o foco dentro do modal enquanto ele está aberto: sem isso, Tab/
+// Shift+Tab vazariam para elementos da página atrás do modal, o que é
+// confuso para quem navega só pelo teclado.
 function trapModalFocus(e) {
   if (e.key !== 'Tab' || $('#modal-backdrop').hidden) return;
   const focusable = focusableModalElements();
@@ -192,8 +253,7 @@ document.addEventListener('click', async e => {
 
   const nav = e.target.closest('.nav-item');
   if (nav) {
-    state.filter = nav.dataset.filter;
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el === nav));
+    setActiveFilter(nav.dataset.filter);
     renderTasks(visibleTasks());
     setSidebarOpen(false);
     return;

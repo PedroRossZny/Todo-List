@@ -1,20 +1,34 @@
 # Flow — Todo List
 
-Todo List em HTML, CSS e JavaScript puro (sem framework, sem build step), com camada de dados isolada para receber um backend real mais adiante.
+Projeto full-stack: frontend em HTML/CSS/JavaScript puro (sem framework, sem build step) consumindo uma API REST. O backend atual (`backend-js/`) é em Node/Express, no paradigma imperativo; o mesmo contrato de API será reimplementado em Elixir (funcional) e Python (orientado a objetos) em ciclos futuros da disciplina, plugando no mesmo frontend.
 
 ## Como rodar
 
-O app usa ES Modules (`<script type="module">`), então abrir `index.html` direto pelo `file://` **não funciona** — o navegador bloqueia imports de módulo nesse contexto. Sirva a pasta com um servidor estático simples, por exemplo:
+Backend e frontend rodam como dois processos separados — precisa de **dois terminais**.
+
+**Terminal 1 — backend (porta 4000):**
 
 ```bash
-# Node
-npx serve .
-
-# Python 3
-python -m http.server 8080
+cd backend-js
+npm install
+node server.js
 ```
 
-Ou use a extensão "Live Server" do VS Code. Depois acesse a URL indicada pelo servidor (ex.: http://localhost:8080).
+**Terminal 2 — frontend (porta 3000):**
+
+```bash
+cd frontend
+npx serve -l 3000 .
+# ou: python -m http.server 3000
+```
+
+Depois acesse http://localhost:3000.
+
+O frontend usa ES Modules (`<script type="module">`), então abrir `frontend/index.html` direto pelo `file://` **não funciona** — o navegador bloqueia imports de módulo nesse contexto. Por isso precisa de um servidor estático, mesmo que simples.
+
+### Por que CORS
+
+Frontend (`localhost:3000`) e backend (`localhost:4000`) são origens diferentes, então o navegador bloquearia as chamadas `fetch()` do frontend por padrão. O backend habilita CORS (`app.use(cors())`, em `backend-js/server.js`) para permitir isso.
 
 ## Funcionalidades
 
@@ -26,13 +40,9 @@ Ou use a extensão "Live Server" do VS Code. Depois acesse a URL indicada pelo s
 - Estados de carregando, erro (com botão "Tentar novamente") e vazio (mensagens diferentes para "nenhuma tarefa" e "nenhum resultado para o filtro/busca atual").
 - Acessível por teclado: `Ctrl/Cmd N` abre o modal de nova tarefa, `Esc` fecha modal/sidebar mobile, foco preso dentro do modal enquanto aberto.
 
-## Camada de dados
+## Camada de dados e contrato da API
 
-Toda leitura/escrita de tarefas passa por `scripts/tasksService.js` (`getAll/create/toggle/remove/health`). Hoje essa camada **simula os dados em memória** — ou seja, criar, concluir ou excluir tarefas **não persiste entre reloads** ainda; é um estado temporário até um backend real ser conectado.
-
-Ao longo do semestre, `tasksService.js` vai trocar essa simulação por chamadas `fetch()` contra uma API REST (implementada em JS, Elixir ou Python — todas seguindo o mesmo contrato). Quando isso acontecer, configure a URL do backend na constante `API_BASE_URL`, no topo de `scripts/tasksService.js` — é o único lugar que precisa mudar. O restante do app (`scripts/script.js`) só conhece `tasksService.getAll/create/toggle/remove/health` e não sabe se os dados vêm de memória ou de uma API.
-
-### Contrato da API (quando plugada)
+Toda leitura/escrita de tarefas no frontend passa por `frontend/scripts/tasksService.js` (`getAll/create/toggle/remove/health`) — é o único módulo que sabe que os dados vêm de uma API HTTP; `frontend/scripts/script.js` só chama esses métodos. A URL do backend fica na constante `API_BASE_URL`, no topo de `tasksService.js` — é o único lugar que muda se o backend rodar em outra porta/host, ou for trocado pela versão em Elixir/Python.
 
 ```
 GET    /todos
@@ -42,11 +52,18 @@ DELETE /todos/:id               → 404 se não existe
 GET    /health
 ```
 
+**Os dados são em memória no processo do backend** (`let todos` em `backend-js/server.js`) — ou seja, **não há persistência entre reinícios**: toda vez que o backend é reiniciado, a lista volta às 3 tarefas de exemplo.
+
 ## Estrutura dos arquivos
 
 ```
-index.html              estrutura estática da página
-styles/style.css         aparência (cores, layout, responsividade)
-scripts/script.js        UI: renderização e eventos
-scripts/tasksService.js   camada de dados (hoje em memória, futuramente a API)
+frontend/
+  index.html                estrutura estática da página
+  styles/style.css          aparência (cores, layout, responsividade)
+  scripts/script.js         UI: renderização e eventos
+  scripts/tasksService.js   camada de dados — chama a API REST
+
+backend-js/
+  server.js       API REST em Express (paradigma imperativo)
+  package.json
 ```

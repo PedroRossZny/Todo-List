@@ -116,4 +116,4 @@ app.get('/health', (req, res) => {
 	res.json({ status: "ok" });
 });
 
-app.listen(4000);
+app.listen(process.env.PORT || 4000);

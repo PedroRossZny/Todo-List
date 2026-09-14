@@ -12,7 +12,7 @@
 // tem outro nome.
 // -----------------------------------------------------------------------
 
-export const API_BASE_URL = 'https://todo-list-lc6n.onrender.com/';
+export const API_BASE_URL = 'https://todo-list-backend-6weg.onrender.com';
 
 const tasksService = {
   /**

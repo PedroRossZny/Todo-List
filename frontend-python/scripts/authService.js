@@ -13,7 +13,7 @@
 // a única informação de sessão que existe nesta fase.
 // -----------------------------------------------------------------------
 
-export const API_BASE_URL = 'http://127.0.0.1:5000';
+export const API_BASE_URL = 'https://PedroRoss.pythonanywhere.com';
 
 const SESSION_KEY = 'flow-python-session';
 

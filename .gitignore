@@ -1,3 +1,8 @@
+# Python (backend-python/)
+__pycache__/
+*.pyc
+*.db
+
 # Logs
 logs
 *.log

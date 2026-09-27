@@ -1,0 +1,170 @@
+<!doctype html>
+<!--
+  index.html
+  ----------------------------------------------------------------------
+  Frontend próprio da versão Python/orientada a objetos (backend-python/),
+  a única com conta de usuário. Duas telas na mesma página, alternadas via
+  `hidden` por script.js: #auth-screen (login/registro) e #app-screen
+  (a mesma lista de tarefas do frontend/ original, com usuário + logout
+  na sidebar). Não contém lógica — script.js preenche os elementos com id
+  e style.css cuida da aparência (mesmo design system do frontend/).
+  ----------------------------------------------------------------------
+-->
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#6d5dfc">
+  <title>Flow — Todo List (Python)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+
+  <!-- Tela de autenticação -->
+  <div class="auth-screen" id="auth-screen">
+    <div class="auth-card">
+      <div class="brand"><b aria-hidden="true">✓</b>flow</div>
+      <h1 id="auth-title">Entrar</h1>
+      <p class="subtitle" id="auth-subtitle">Entre com sua conta para ver suas tarefas.</p>
+
+      <div class="auth-error" id="auth-error" hidden></div>
+
+      <form id="auth-form">
+        <label class="field">
+          <span>Usuário</span>
+          <input id="auth-username" name="username" required maxlength="50" placeholder="Seu usuário" autocomplete="username">
+        </label>
+        <label class="field">
+          <span>Senha</span>
+          <input id="auth-senha" name="senha" type="password" required minlength="4" placeholder="Sua senha" autocomplete="current-password">
+        </label>
+        <button class="save-button auth-submit" type="submit" id="auth-submit">Entrar</button>
+      </form>
+
+      <p class="auth-switch">
+        <span id="auth-switch-text">Não tem conta?</span>
+        <button type="button" class="link-button" id="auth-switch-button">Criar conta</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- App de tarefas (visível só depois de autenticar) -->
+  <div class="app-shell" id="app-screen" hidden>
+    <aside class="sidebar" id="sidebar">
+      <button type="button" class="brand" id="brand-home">
+        <b aria-hidden="true">✓</b>flow
+      </button>
+      <button class="new-task-button" id="open-task-modal">
+        <span aria-hidden="true">＋</span>
+        Nova tarefa
+        <kbd id="shortcut-new">⌘ N</kbd>
+      </button>
+      <nav class="primary-nav">
+        <button class="nav-item active" data-filter="all">
+          <i aria-hidden="true">☷</i>
+          Todas
+          <b id="count-all">0</b>
+        </button>
+        <button class="nav-item" data-filter="pending">
+          <i aria-hidden="true">◷</i>
+          Pendentes
+          <b id="count-pending">0</b>
+        </button>
+        <button class="nav-item" data-filter="done">
+          <i aria-hidden="true">✓</i>
+          Concluídas
+          <b id="count-done">0</b>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="usage">
+          <div>
+            <span>Seu progresso</span>
+            <strong id="weekly-progress">0%</strong>
+          </div>
+          <div class="progress-track"><i id="progress-bar" aria-hidden="true"></i></div>
+          <small>
+            <span id="completed-week">0</span>
+            de
+            <span id="weekly-total">0</span>
+            tarefas concluídas
+          </small>
+        </div>
+        <div class="account-row">
+          <span class="account-name" id="account-username"></span>
+          <button type="button" class="logout-button" id="logout-button">Sair</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobile-menu" aria-label="Abrir menu" aria-expanded="false">☰</button>
+        <label class="search">
+          <span aria-hidden="true">⌕</span>
+          <input id="search-input" type="search" placeholder="Buscar tarefas..." aria-label="Buscar tarefas">
+          <kbd id="shortcut-search">⌘ K</kbd>
+        </label>
+        <div class="top-actions">
+          <button class="icon-button" id="theme-toggle" aria-label="Ativar modo escuro">☾</button>
+        </div>
+      </header>
+
+      <section class="page">
+        <div class="page-heading">
+          <div>
+            <h1>Minhas tarefas</h1>
+            <p class="subtitle">Gerencie o que precisa ser feito.</p>
+          </div>
+        </div>
+
+        <div class="error-banner" id="error-banner" hidden>
+          <span id="error-banner-text"></span>
+          <button id="retry-load">Tentar novamente</button>
+        </div>
+
+        <div class="loading-state" id="loading-state" hidden>Carregando tarefas…</div>
+
+        <div class="task-toolbar" id="task-toolbar" hidden>
+          <span id="task-summary"></span>
+          <button id="sort-toggle">
+            <span aria-hidden="true">↕</span>
+            Ordenar por: mais recentes
+          </button>
+        </div>
+
+        <div id="tasks-list" class="tasks-list"></div>
+
+        <div class="empty-state" id="empty-state" hidden></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal de nova tarefa -->
+  <div class="modal-backdrop" id="modal-backdrop" hidden>
+    <form class="task-modal" id="task-form" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-head">
+        <h2 id="modal-title">Nova tarefa</h2>
+        <button type="button" class="close-modal" aria-label="Fechar">×</button>
+      </div>
+      <label class="field">
+        <span>Título</span>
+        <input id="task-title" name="title" required maxlength="100" placeholder="O que precisa ser feito?">
+        <small class="char-counter" id="title-counter">0/100</small>
+      </label>
+      <div class="modal-actions">
+        <button class="cancel-button" type="button">Cancelar</button>
+        <button class="save-button" type="submit">Criar tarefa</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="scripts/script.js"></script>
+</body>
+</html>

@@ -1,6 +1,10 @@
+import os
+import sqlite3
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from usuarios import RepositorioDeUsuarios
+
+CAMINHO_BANCO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dados.db")
 
 app = Flask(__name__)
 CORS(app)
@@ -11,10 +15,10 @@ class Tarefa:
     properties e só muda através do método toggle() — ninguém de fora
     faz `tarefa.completed = True` diretamente."""
 
-    def __init__(self, id, title, usuario_id):
+    def __init__(self, id, title, usuario_id, completed=False):
         self.id = id
         self._title = title.strip()
-        self._completed = False
+        self._completed = completed
         self.usuario_id = usuario_id
 
     @property
@@ -33,36 +37,69 @@ class Tarefa:
 
 
 class RepositorioDeTarefas:
-    """Dono da coleção de tarefas. Ninguém de fora mexe numa lista solta —
-    só por meio destes métodos, que garantem as regras (título obrigatório,
-    id sequencial, tarefa existir antes de mutar)."""
+    """Dono da coleção de tarefas — agora persistida em SQLite, não mais
+    numa lista em memória. Ninguém de fora escreve SQL diretamente, só por
+    meio destes métodos, que garantem as regras (título obrigatório, tarefa
+    pertencer ao usuário certo antes de mutar)."""
 
-    def __init__(self):
-        self._tarefas = []
-        self._next_id = 1
+    def __init__(self, caminho_banco=CAMINHO_BANCO):
+        self._conexao = sqlite3.connect(caminho_banco, check_same_thread=False)
+        self._conexao.execute("""
+            CREATE TABLE IF NOT EXISTS tarefas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT NOT NULL,
+                completed INTEGER NOT NULL DEFAULT 0,
+                usuario_id INTEGER NOT NULL
+            )
+        """)
+        self._conexao.commit()
+
+    def _tarefa_da_linha(self, linha):
+        return Tarefa(linha[0], linha[1], linha[3], completed=bool(linha[2]))
 
     def listar(self, usuario_id):
-        return [t.to_dict() for t in self._tarefas if t.usuario_id == usuario_id]
+        linhas = self._conexao.execute(
+            "SELECT id, title, completed, usuario_id FROM tarefas WHERE usuario_id = ?",
+            (usuario_id,),
+        ).fetchall()
+        return [self._tarefa_da_linha(l).to_dict() for l in linhas]
 
     def criar(self, title, usuario_id):
         if not isinstance(title, str) or not title.strip():
             raise ValueError("Titulo e obrigatorio.")
-        tarefa = Tarefa(self._next_id, title, usuario_id)
-        self._next_id += 1
-        self._tarefas.append(tarefa)
-        return tarefa
+        titulo_limpo = title.strip()
+        cursor = self._conexao.execute(
+            "INSERT INTO tarefas (title, completed, usuario_id) VALUES (?, 0, ?)",
+            (titulo_limpo, usuario_id),
+        )
+        self._conexao.commit()
+        return Tarefa(cursor.lastrowid, titulo_limpo, usuario_id)
 
     def buscar(self, id, usuario_id):
-        for t in self._tarefas:
-            if t.id == id and t.usuario_id == usuario_id:
-                return t
-        return None
+        linha = self._conexao.execute(
+            "SELECT id, title, completed, usuario_id FROM tarefas WHERE id = ? AND usuario_id = ?",
+            (id, usuario_id),
+        ).fetchone()
+        if linha is None:
+            return None
+        return self._tarefa_da_linha(linha)
+
+    def salvar(self, tarefa):
+        """Grava no banco uma mudança feita no objeto (ex: depois de
+        toggle()). Sem isso, a mutação existiria só na memória do processo
+        atual, exatamente o bug que causou o sumiço das tarefas."""
+        self._conexao.execute(
+            "UPDATE tarefas SET completed = ? WHERE id = ?",
+            (int(tarefa.completed), tarefa.id),
+        )
+        self._conexao.commit()
 
     def remover(self, id, usuario_id):
         tarefa = self.buscar(id, usuario_id)
         if tarefa is None:
             return False
-        self._tarefas.remove(tarefa)
+        self._conexao.execute("DELETE FROM tarefas WHERE id = ?", (id,))
+        self._conexao.commit()
         return True
 
 
@@ -118,6 +155,7 @@ def toggle_todo(id):
     if tarefa is None:
         return jsonify({"erro": "Essa tarefa nao existe"}), 404
     tarefa.toggle()
+    repositorio.salvar(tarefa)
     return jsonify(tarefa.to_dict())
 
 

@@ -1,5 +1,8 @@
+import os
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
+
+CAMINHO_BANCO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dados.db")
 
 
 class Usuario:
@@ -23,7 +26,7 @@ class RepositorioDeUsuarios:
     """Dono da tabela de usuarios no banco. É o único lugar do sistema que
     sabe que existe SQL, e o único que sabe gerar hash de senha."""
 
-    def __init__(self, caminho_banco="dados.db"):
+    def __init__(self, caminho_banco=CAMINHO_BANCO):
         self._conexao = sqlite3.connect(caminho_banco, check_same_thread=False)
         self._conexao.execute("""
             CREATE TABLE IF NOT EXISTS usuarios (

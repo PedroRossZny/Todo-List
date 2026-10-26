@@ -3,7 +3,8 @@
   index.html
   ----------------------------------------------------------------------
   Estrutura estática da página: sidebar (marca, botão de nova tarefa,
-  navegação por status, progresso), topbar (busca, tema), lista de
+  navegação por status, seletor de backend, progresso), topbar (busca,
+  tema), lista de
   tarefas e o modal de criação. Não contém lógica — script.js preenche
   os elementos com id (contadores, lista, estados de carregando/erro/
   vazio) e style.css cuida da aparência.
@@ -51,6 +52,21 @@
         </button>
       </nav>
       <div class="sidebar-footer">
+        <!-- Seletor de backend: mesmo frontend, mesmo contrato, paradigma diferente -->
+        <fieldset class="backend-switch">
+          <legend>Backend</legend>
+          <div class="backend-options">
+            <label class="backend-option">
+              <input type="radio" name="backend" value="js">
+              <span>JavaScript <small>imperativo</small></span>
+            </label>
+            <label class="backend-option">
+              <input type="radio" name="backend" value="elixir">
+              <span>Elixir <small>funcional</small></span>
+            </label>
+          </div>
+        </fieldset>
+
         <div class="usage">
           <div>
             <span>Seu progresso</span>

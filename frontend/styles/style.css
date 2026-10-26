@@ -210,6 +210,75 @@ body {
   font-size: 10px;
 }
 
+/* Seletor de backend (rodapé da sidebar, acima do progresso) */
+.backend-switch {
+  background: #f8f7ff;
+  border: 0;
+  border-radius: 10px;
+  margin: 0 0 10px;
+  min-width: 0;
+  padding: 13px 12px;
+}
+
+/* float + width faz a legend se comportar como um título comum dentro do card */
+.backend-switch legend {
+  float: left;
+  font-size: 11px;
+  margin-bottom: 9px;
+  padding: 0;
+  width: 100%;
+}
+
+.backend-options {
+  background: #ebe9f3;
+  border-radius: 8px;
+  clear: both;
+  display: grid;
+  gap: 3px;
+  grid-template-columns: 1fr 1fr;
+  padding: 3px;
+}
+
+.backend-option {
+  position: relative;
+}
+
+/* o rádio nativo fica invisível, mas continua focável e navegável pelas setas */
+.backend-option input {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.backend-option span {
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  display: block;
+  font: 600 12px 'DM Sans';
+  line-height: 1.25;
+  padding: 7px 4px;
+  text-align: center;
+  transition: .2s;
+}
+
+.backend-option small {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.backend-option input:checked + span {
+  background: var(--surface);
+  box-shadow: 0 1px 3px #28273a1f;
+  color: var(--purple-text);
+}
+
+.backend-option input:focus-visible + span {
+  outline: 2px solid var(--purple);
+  outline-offset: 1px;
+}
+
 .content {
   margin-left: 264px;
   min-width: 0;
@@ -607,8 +676,18 @@ body.dark {
 }
 
 body.dark .usage,
+body.dark .backend-switch,
 body.dark .field input {
   background: #302f3d;
+}
+
+body.dark .backend-options {
+  background: #262532;
+}
+
+body.dark .backend-option input:checked + span {
+  background: var(--soft);
+  box-shadow: none;
 }
 
 body.dark .icon-button:hover {

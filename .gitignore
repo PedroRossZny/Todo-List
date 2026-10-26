@@ -3,6 +3,11 @@ __pycache__/
 *.pyc
 *.db
 
+# Elixir (backend-elixir/): gerados pelo Mix, recriados com `mix deps.get`
+backend-elixir/_build/
+backend-elixir/deps/
+erl_crash.dump
+
 # Logs
 logs
 *.log

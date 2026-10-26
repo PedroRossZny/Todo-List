@@ -2,12 +2,12 @@
 // -----------------------------------------------------------------------
 // Camada de UI: renderiza a lista de tarefas e liga os elementos de
 // index.html aos eventos do usuário (criar, concluir, excluir, filtrar,
-// buscar, ordenar, tema, sidebar mobile, modal). Não conhece de onde os
-// dados vêm — toda leitura/escrita passa por tasksService (getAll/create/
-// toggle/remove/health), que é o único módulo que sabe se os dados estão
-// em memória ou vindo de uma API real.
+// buscar, ordenar, trocar de backend, tema, sidebar mobile, modal). Não
+// conhece de onde os dados vêm — toda leitura/escrita passa por tasksService
+// (getAll/create/toggle/remove/health), que é o único módulo que sabe qual
+// backend está em uso e como falar com ele.
 // -----------------------------------------------------------------------
-import tasksService from './tasksService.js';
+import tasksService, { BACKENDS } from './tasksService.js';
 
 // Atalho para document.querySelector.
 const $ = s => document.querySelector(s);
@@ -131,20 +131,30 @@ function showLoadError(err) {
   $('#error-banner').hidden = false;
 }
 
-// Carrega as tarefas do zero: primeiro checa a saúde do backend (hoje sempre
-// ok, simulado), depois busca a lista. Chamada no boot e sempre que uma ação
-// (criar/concluir/excluir) precisa reconciliar o estado local com a "fonte
-// da verdade" do tasksService.
+// Carrega as tarefas do zero: primeiro checa a saúde do backend (GET
+// /health), depois busca a lista. Chamada no boot, ao trocar de backend e
+// sempre que uma ação (criar/concluir/excluir) precisa reconciliar o estado
+// local com a "fonte da verdade" do backend.
+//
+// ultimaCarga numera cada chamada. Só a mais recente pode desenhar a tela:
+// se o usuário trocar de backend enquanto o anterior ainda responde (um
+// servidor gratuito acordando pode levar quase um minuto), a resposta
+// atrasada é descartada em vez de sobrescrever a lista do backend novo.
+let ultimaCarga = 0;
 async function load() {
+  const estaCarga = ++ultimaCarga;
   showLoading();
   try {
     await tasksService.health();
-    allTasks = await tasksService.getAll();
+    const tarefas = await tasksService.getAll();
+    if (estaCarga !== ultimaCarga) return;
+    allTasks = tarefas;
     $('#loading-state').hidden = true;
     $('#error-banner').hidden = true;
     $('#task-toolbar').hidden = false;
     renderAll();
   } catch (err) {
+    if (estaCarga !== ultimaCarga) return;
     showLoadError(err);
   }
 }
@@ -171,6 +181,22 @@ function resetView() {
   $('#search-input').value = '';
   renderTasks(visibleTasks());
   setSidebarOpen(false);
+}
+
+// --- Backend ---
+// Marca no seletor da sidebar o backend que está em uso ao abrir a página.
+function initBackendSwitch() {
+  const atual = document.querySelector(`input[name="backend"][value="${tasksService.getBackend()}"]`);
+  if (atual) atual.checked = true;
+}
+// Troca o backend e recarrega a lista vinda dele. Filtro, busca e tema
+// continuam como estavam: o contrato da API é o mesmo nos dois backends,
+// então nada mais no frontend precisa mudar.
+function changeBackend(chave) {
+  tasksService.setBackend(chave);
+  toast(`Usando o backend ${BACKENDS[chave].nome}.`);
+  setSidebarOpen(false);
+  load();
 }
 
 // --- Tema ---
@@ -315,6 +341,10 @@ $('#task-form').addEventListener('submit', async e => {
   }
 });
 
+document.querySelectorAll('input[name="backend"]').forEach(opcao => {
+  opcao.addEventListener('change', e => changeBackend(e.target.value));
+});
+
 $('#search-input').addEventListener('input', e => {
   state.search = e.target.value;
   renderTasks(visibleTasks());
@@ -333,4 +363,5 @@ document.addEventListener('keydown', e => {
 
 initTheme();
 initShortcutLabels();
+initBackendSwitch();
 load();

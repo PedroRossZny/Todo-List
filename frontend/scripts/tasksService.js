@@ -20,7 +20,7 @@
 // http://localhost:4001 (Elixir).
 export const BACKENDS = {
   js: { nome: 'JavaScript (imperativo)', url: 'https://todo-list-backend-6weg.onrender.com' },
-  elixir: { nome: 'Elixir (funcional)', url: 'URL_DO_BACKEND_ELIXIR_NO_RENDER' },
+  elixir: { nome: 'Elixir (funcional)', url: 'https://todo-list-backend-elixir.onrender.com' },
 };
 
 const CHAVE_BACKEND = 'flow-backend';
